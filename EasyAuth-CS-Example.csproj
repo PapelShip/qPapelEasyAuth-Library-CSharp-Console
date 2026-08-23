@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>EasyAuth_CS_Example</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x64</PlatformTarget>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <!-- Standalone DLL Reference from local wrapper folder -->
+  <ItemGroup>
+    <Reference Include="qPapelEasyAuth.NET">
+      <HintPath>wrapper\qPapelEasyAuth.NET.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Post-Build Automation: Pack the compiled C# binary with qPapelPacker -->
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
+    <Exec Command="if exist &quot;$(ProjectDir)qPapelTools\qPapelPacker.exe&quot; (
+      echo [*] Packing C# Binary with qPapelPacker...
+      &quot;$(ProjectDir)qPapelTools\qPapelPacker.exe&quot; --dll &quot;$(ProjectDir)qPapelTools\qPapelEasyAuth.dll&quot; --input &quot;$(TargetDir)$(TargetName).exe&quot; --output &quot;$(TargetDir)$(TargetName)_packed.exe&quot;
+      copy /y &quot;$(TargetDir)$(TargetName).runtimeconfig.json&quot; &quot;$(TargetDir)$(TargetName)_packed.runtimeconfig.json&quot; &gt;nul
+      copy /y &quot;$(TargetDir)$(TargetName).deps.json&quot; &quot;$(TargetDir)$(TargetName)_packed.deps.json&quot; &gt;nul
+      copy /y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;$(TargetDir)$(TargetName)_packed.dll&quot; &gt;nul
+    )" ContinueOnError="true" />
+  </Target>
+
+</Project>
