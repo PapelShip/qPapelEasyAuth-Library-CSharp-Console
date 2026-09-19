@@ -6,7 +6,6 @@ namespace EasyAuth_CS_Example
 {
     internal class Program
     {
-        // Protected function example
         private static int CalculateSecurePayload(int a, int b)
         {
             return ((a * b) ^ (a + b)) + 42;
@@ -14,29 +13,28 @@ namespace EasyAuth_CS_Example
 
         static void Main(string[] args)
         {
-            // Config
             var cfg = new EasyAuthConfig
             {
-                Flags = ProtectionFlags.None,
+                Flags = ProtectionFlags.All,
                 HoneypotDelayMs = 5000,
                 VmpMode = false,
-                VmpEnforceProtected = false
+                VmpEnforceProtected = false,
+                ClientVersion = "2.0.0"
             };
             qPapelEasyAuth.qPapelEasyAuth.SetConfig(cfg);
 
-            // Initialize engine
             try
             {
                 qPapelEasyAuth.qPapelEasyAuth.Initialize();
             }
-            catch (SecurityException ex)
+            catch (Exception ex)
             {
-                Console.WriteLine($"[-] Security Alert: {ex.Message}");
+                Console.WriteLine($"[-] Security Alert: {ex.GetType().Name}: {ex.Message}");
+                Console.WriteLine("[-] Build Release and run the packed output (EasyAuth-CS-Example_packed.exe).");
                 Thread.Sleep(3000);
                 return;
             }
 
-            // Connect
             Console.WriteLine("[*] Connecting to qPapelEasyAuth Server...");
             bool net_ok = qPapelEasyAuth.qPapelEasyAuth.Connect();
             if (!net_ok)
@@ -45,7 +43,9 @@ namespace EasyAuth_CS_Example
                 Thread.Sleep(3000);
                 return;
             }
-            
+
+            Console.WriteLine("[+] Connection : CONNECTED");
+
             string api_key = "pk_00000073_1381695181994e4ea94eabf54911520b";
             var init_res = qPapelEasyAuth.qPapelEasyAuth.InitSession(api_key);
             if (!init_res.Success)
@@ -57,17 +57,15 @@ namespace EasyAuth_CS_Example
 
             bool is_vm = qPapelEasyAuth.qPapelEasyAuth.IsVirtualMachine(out int vm_score, out string vm_vendor);
 
-            Console.WriteLine("[+] Connection : CONNECTED");
             Console.WriteLine($"[+] Security   : {(qPapelEasyAuth.qPapelEasyAuth.IsDebuggerDetected() ? "FLAGGED" : "CLEAN")}");
             Console.WriteLine($"[+] VM Machine : {(is_vm ? $"DETECTED (VM: {vm_vendor}, Score: {vm_score})" : "PHYSICAL PC")}\n");
 
-            // Authenticate
             Console.Write("Enter License Key: ");
             string license_key = Console.ReadLine()?.Trim() ?? "";
-            
+
             Console.WriteLine("[*] Authenticating...");
             var auth_res = qPapelEasyAuth.qPapelEasyAuth.Authenticate(license_key, api_key);
-            
+
             if (auth_res.Success)
             {
                 Console.WriteLine("\n[SUCCESS] Authentication Verified!");
@@ -87,8 +85,9 @@ namespace EasyAuth_CS_Example
 
             // Server-side variables
             // string val = qPapelEasyAuth.qPapelEasyAuth.GetVariable("my_variable_access_id", license_key, api_key);
+            // var val_ex = qPapelEasyAuth.qPapelEasyAuth.GetVariableEx("my_variable_access_id", license_key, api_key);
 
-            // Server-side file download (chunked)
+            // Server-side file download
             // var file = qPapelEasyAuth.qPapelEasyAuth.GetFile("file_access_id", license_key, api_key);
             // qPapelEasyAuth.qPapelEasyAuth.DownloadFileToDisk("file_access_id", "C:\\output.dll", license_key, api_key);
 
