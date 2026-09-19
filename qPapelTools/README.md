@@ -4,7 +4,7 @@ this directory contains tools used to protect and pack the target executable aft
 
 ## files
 
-- `qPapelEasyAuth.dll`: core security engine (do not distribute to end users).
+- `qPapelEasyAuth.dll`: core security engine (do not distribute to end users) // you need to upload the qPapelEasyAuth.dll file here; you can download this file from https://papelship.com/dashboard/downloads.
 - `qPapelPacker.exe`: standalone packer that encrypts and embeds the dll into the target executable.
 - `pack_release.bat`: convenience script to pack the release build.
 
