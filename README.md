@@ -1,16 +1,20 @@
 # easyauth c# sdk & example
 
-c# client wrapper and example console application for the qpapel easyauth system.
+c# client wrapper and example console application for the qpapel easyauth system (.net 8).
 
 ## requirements
 
 - .net sdk 8.0 or later
 - windows x64
+- `qPapelPacker.exe` and `qPapelEasyAuth.dll` in `qPapelTools\` (download from https://papelship.com/dashboard/downloads)
+- `qPapelEasyAuth.NET.dll` in `wrapper\` (download from https://papelship.com/dashboard/downloads)
+
+if `qPapelEasyAuth.dll` is missing, debug and release post-build fail with: `qPapelEasyAuth.dll is missing. download it and try again`
 
 ## structure
 
-- `qPapelLibCsharp/`: c# wrapper library (.net standard 2.0 / .net 8 / .net 9 compatible nuget package).
-- `EasyAuth-CS-Example/`: example application with automated post-build packer integration.
+- `wrapper/`: c# wrapper dll. costura.fody embeds it into the example so it is not shipped as a loose file.
+- `EasyAuth-CS-Example.csproj`: example application with automated post-build packer integration.
 - `qPapelTools/`: native core dll and pe section packer tool.
 
 ## usage
@@ -18,36 +22,46 @@ c# client wrapper and example console application for the qpapel easyauth system
 ```csharp
 using qPapelEasyAuth;
 
-// 1. initialize in-memory pe engine
-qPapelEasyAuth.Initialize();
-
-// 2. configure
-qPapelEasyAuth.SetConfig(new EasyAuthConfig
+qPapelEasyAuth.qPapelEasyAuth.SetConfig(new EasyAuthConfig
 {
-    DefaultApiKey = "pk_00000073_0c492fbfaad6c9ff99a9a3b8da76c8c4",
+    Flags = ProtectionFlags.All,
+    DefaultApiKey = "pk_your_api_key",
     ClientVersion = "2.0.0",
     WatchdogIntervalMs = 500
 });
 
-// 3. connect and authenticate
-if (qPapelEasyAuth.Connect())
+qPapelEasyAuth.qPapelEasyAuth.Initialize();
+
+if (qPapelEasyAuth.qPapelEasyAuth.Connect())
 {
-    var session = qPapelEasyAuth.InitSession();
-    var auth = qPapelEasyAuth.Authenticate("USER_LICENSE_KEY");
+    var session = qPapelEasyAuth.qPapelEasyAuth.InitSession();
+    var auth = qPapelEasyAuth.qPapelEasyAuth.Authenticate("USER_LICENSE_KEY");
     if (auth.Success)
     {
         Console.WriteLine($"auth success: {auth.ExpireDate}");
-        string val = qPapelEasyAuth.GetVariable("var_id");
+        string val = qPapelEasyAuth.qPapelEasyAuth.GetVariable("var_id");
     }
 }
 ```
 
+`Initialize()` requires a packed binary. unpacked builds are rejected on purpose.
+
 ## build and distribution
 
-build the project in release mode:
+build in release mode:
 
 ```cmd
 dotnet build -c Release
 ```
 
-distribute only the `EasyAuth-CS-Example_packed.exe` generated in `bin/Release/net8.0/`. no external dll files are required.
+the post-build step packs `EasyAuth-CS-Example.exe` into `EasyAuth-CS-Example_packed.exe`.
+costura.fody already hid `qPapelEasyAuth.NET.dll` inside the managed assembly. the packer then embeds `qPapelEasyAuth.dll` into the packed exe.
+
+distribute the packed apphost and its companion files from `bin/Release/net8.0/` (or `bin/x64/Release/net8.0/`):
+
+- `EasyAuth-CS-Example_packed.exe`
+- `EasyAuth-CS-Example_packed.dll`
+- `EasyAuth-CS-Example_packed.runtimeconfig.json`
+- `EasyAuth-CS-Example_packed.deps.json`
+
+do not ship `qPapelEasyAuth.dll` or `qPapelEasyAuth.NET.dll`. the native engine is decrypted and mapped in memory at runtime.

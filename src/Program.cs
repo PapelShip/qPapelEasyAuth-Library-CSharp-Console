@@ -46,7 +46,7 @@ namespace EasyAuth_CS_Example
 
             Console.WriteLine("[+] Connection : CONNECTED");
 
-            string api_key = "pk_00000073_1381695181994e4ea94eabf54911520b";
+            string api_key = "";
             var init_res = qPapelEasyAuth.qPapelEasyAuth.InitSession(api_key);
             if (!init_res.Success)
             {
